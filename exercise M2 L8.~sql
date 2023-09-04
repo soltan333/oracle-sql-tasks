@@ -1,0 +1,118 @@
+﻿--1.Qeyd edilən datalardan istifadə edərək cədvəlləri yaradın və constraintləri özünüz
+-- təyin edin
+
+create table salesman1(salesman_id number primary key,
+                       name varchar2(30),
+                       city varchar2(15),
+                       commission number(5,2));
+
+create table customer1(customer_id number primary key,
+                       cust_name varchar2(30),
+                       city varchar2(15),
+                       grade number,
+                       salesman_id references salesman1(salesman_id));
+
+create table orders(ord_no number primary key,
+                    purch_amt number(8,2),
+                    ord_date date,
+                    customer_id references customer1(customer_id),
+                    salesman_id references salesman1(salesman_id));
+                    
+
+insert into salesman1 values (5001,'James Hoog','New York',0.15);
+insert into salesman1 values (5002,'Nail Knite','Paris',0.13);
+insert into salesman1 values (5005,'Pit Alex','London',0.11);
+insert into salesman1 values (5006,'Mc Lyon','Paris',0.14);
+insert into salesman1 values (5007,'Paul Adam','Rome',0.13);
+insert into salesman1 values (5003,'Lauson Hen','San Jose',0.12);
+
+select * from salesman1;
+
+insert into customer1 values (3002,'Nick Rimando','New York',100,5001);
+insert into customer1 values (3007,'Brad Davis','New York',200,5001);
+insert into customer1 values (3005,'Graham Zusi','California',200,5002);
+insert into customer1 values (3008,'Julian Green','London',300,5002);
+insert into customer1 values (3004,'Fabian Johnson','Paris',300,5006);
+insert into customer1 values (3009,'Geoff Cameron','Berlin',100,5003);
+insert into customer1 values (3003,'Jozy Altidor','Moscow',200,5007);
+insert into customer1 values (3001,'Brad Guzan','London',null,5005);
+
+select * from customer1;
+
+insert into orders values (70001,150.5,to_date('2012.10.05','yyyy.mm.dd'),3005,5002);
+insert into orders values (70009,270.65,to_date('2012.09.10','yyyy.mm.dd'),3001,5005);
+insert into orders values (70002,65.26,to_date('2012.10.05','yyyy.mm.dd'),3002,5001);
+insert into orders values (70004,110.5,to_date('2012.08.17','yyyy.mm.dd'),3009,5003);
+insert into orders values (70007,948.5,to_date('2012.09.10','yyyy.mm.dd'),3005,5002);
+insert into orders values (70005,2400.6,to_date('2012.07.27','yyyy.mm.dd'),3007,5001);
+insert into orders values (70008,5760,to_date('2012.09.10','yyyy.mm.dd'),3002,5001);
+insert into orders values (70010,1983.43,to_date('2012.10.10','yyyy.mm.dd'),3004,5006);
+insert into orders values (70003,2480.4,to_date('2012.10.10','yyyy.mm.dd'),3009,5003);
+insert into orders values (70012,250.45,to_date('2012.06.27','yyyy.mm.dd'),3008,5002);
+insert into orders values (70011,75.29,to_date('2012.08.17','yyyy.mm.dd'),3003,5007);
+insert into orders values (70013,3045.6,to_date('2012.04.25','yyyy.mm.dd'),3002,5001);
+
+select * from salesman1;
+select * from customer1;
+select * from orders;
+
+
+--2.Qeyd edilən cədvəllərdən ən yüksək grade datası olan müştərinin bütün məlumatlarını
+-- özündə saxlayan view yaradın
+create view v_max_grade_cust as
+select * from customer1 c where grade=(select max(grade) from customer1);
+
+select * from v_max_grade_cust;
+--3.Avqustun 17-si 2012 ci-il və ya Oktyabrın 10-u 2012-ci ildə 2 sifariş qəbul edən
+-- satıcıların siyahısını çıxaran view yaradın
+create view v_salesman as
+select * from salesman1 s where salesman_id in
+(select o.salesman_id from orders o where o.ord_date=to_date('17.08.2012','dd.mm.yyyy')
+                                       or o.ord_date=to_date('10.10.2012','dd.mm.yyyy')); 
+
+select * from v_salesman;
+--4.Hər gün qəbul edilən sifarişlərin sayının əvvəlki günlə olan sifarişlərin sayına olan
+-- fərqini ekrana çıxaran view yaradın. Həmin fərqi və tarixi ekrana çıxarın
+
+
+
+--5.Birdən çox müştərisi olan satıcıların siyahısını çıxaran view yaradın 
+create or replace view v_salesman_more as
+select * from salesman1 s where s.salesman_id in
+(select o.salesman_id from orders o group by o.salesman_id having count  (distinct o.customer_id)>1); 
+
+select o.salesman_id,count(o.customer_id) from orders o group by o.salesman_id;
+
+select * from v_salesman_more v;
+--6.5-ci sualda yaratdığınız view-dan istifadə edərək müştəri sayına görə 4-cü yerdə olan
+-- satıcının id-sini çıxarın
+
+
+--7.Hər şəhər üzrə o şəhərdə xidmət göstərən satıcıların sayını çıxaran view yaradın.
+-- Şəhərin adı, satıcıların sayını ekrana çıxarın. 
+--Əgər şəhərdə 2-dən az satıcı fəaliyyət göstərirsə ekrana çıxmasın
+create view v_city_salesman as
+select count(s.salesman_id) count_salesman,s.city from salesman1 s group by s.city;
+
+select * from v_city_salesman v where v.count_salesman>1;
+
+--8.Gün ərzində 3-dən çox sifariş qəbul edən satıcının adını çıxarın
+
+
+--9.Hər gün üzrə ən yüksək gəlir əldə edən satıcının datasını çıxarın
+
+
+--10.Hər bir müştəri üzrə ən çox məshul aldığı satıcının datasını çıxarın.
+-- Müştərinin və satıcının id-ləri ekrana çıxsın.
+
+
+
+
+
+
+
+
+
+
+
+
